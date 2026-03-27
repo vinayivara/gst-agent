@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: gst-agent-backend
+    env: node
+    region: singapore
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npx playwright install chromium --with-deps
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: FRONTEND_URL
+        fromInput: true
