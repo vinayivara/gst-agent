@@ -1,3 +1,11 @@
+const { execSync } = require('child_process');
+try {
+  console.log('Installing Playwright browsers...');
+  execSync('npx playwright install chromium', { stdio: 'inherit' });
+  console.log('Browsers installed successfully.');
+} catch (err) {
+  console.error('Browser install failed:', err.message);
+}
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
