@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vinay Jagadish — PM & Program Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F8F7F4;
+      --bg2: #EEECE8;
+      --white: #FFFFFF;
+      --ink: #1A1A1A;
+      --ink2: #3D3C39;
+      --muted: #6B6860;
+      --border: #E2DFD9;
+      --accent: #E07B39;
+      --accent-light: #F5EDE4;
+      --accent-dark: #C4622A;
+      --green: #3A7D5A;
+      --font-serif: 'Fraunces', Georgia, serif;
+      --font-sans: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--ink);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 5vw;
+      background: rgba(248,247,244,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      transition: box-shadow 0.3s;
+    }
+    nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
+    .nav-name {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--ink);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+    .nav-name span { color: var(--accent); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--ink); }
+    .nav-hire {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--white);
+      background: var(--accent);
+      padding: 0.55rem 1.3rem;
+      text-decoration: none;
+      border-radius: 100px;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .nav-hire:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+    .hamburger span { display: block; width: 22px; height: 1.5px; background: var(--ink); transition: 0.3s; }
+    .mobile-menu {
+      display: none; position: fixed;
+      top: 65px; left: 0; right: 0; z-index: 99;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 5vw 2rem;
+      flex-direction: column; gap: 1.2rem;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a { font-size: 0.95rem; font-weight: 500; color: var(--ink); text-decoration: none; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 0;
+      padding-top: 65px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(224,123,57,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-left {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 6rem 5vw 5rem;
+      position: relative; z-index: 2;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--accent-light);
+      border: 1px solid rgba(224,123,57,0.25);
+      border-radius: 100px;
+      padding: 0.4rem 1rem;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-dark);
+      margin-bottom: 1.8rem;
+      width: fit-content;
+    }
+    .hero-badge::before { content: '●'; font-size: 0.5rem; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(3rem, 5.5vw, 5.2rem);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 0.4rem;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .hero-tagline {
+      font-family: var(--font-serif);
+      font-size: clamp(1rem, 1.8vw, 1.3rem);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--muted);
+      margin-bottom: 1.8rem;
+      line-height: 1.4;
+    }
+    .hero-bio {
+      font-size: 0.95rem;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--ink2);
+      max-width: 520px;
+      margin-bottom: 2.5rem;
+    }
+    .hero-bio strong { font-weight: 500; color: var(--ink); }
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 3rem; }
+    .btn-primary {
+      font-size: 0.8rem; font-weight: 500;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--white); background: var(--accent);
+      padding: 0.85rem 2rem; border-radius: 100px;
+      text-decoration: none; transition: background 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-2px); }
+    .btn-outline {
+      font-size: 0.8rem; font-weight: 500;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      color: var(--ink); background: transparent;
+      border: 1px solid var(--border);
+      padding: 0.85rem 2rem; border-radius: 100px;
+      text-decoration: none; transition: border-color 0.2s, transform 0.15s;
+    }
+    .btn-outline:hover { border-color: var(--ink); transform: translateY(-2px); }
+    .hero-companies {
+      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+    }
+    .hero-companies-label {
+      font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); margin-right: 0.5rem;
+    }
+    .company-pill {
+      font-size: 0.75rem; font-weight: 500;
+      color: var(--ink2);
+      background: var(--white);
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.9rem;
+      border-radius: 100px;
+    }
+    .hero-right {
+      display: flex; align-items: center; justify-content: center;
+      background: var(--white);
+      border-left: 1px solid var(--border);
+      padding: 4rem 2rem;
+      position: relative;
+      gap: 1.5rem;
+    }
+    .hero-photo-wrap {
+      width: 240px; height: 300px;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .hero-photo-bg {
+      position: absolute;
+      top: 16px; left: 16px;
+      width: 100%; height: 100%;
+      background: var(--accent-light);
+      border-radius: 4px;
+    }
+    .hero-photo {
+      position: relative; z-index: 1;
+      width: 100%; height: 100%;
+      background: var(--bg2);
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .hero-photo img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: top;
+    }
+    .hero-monogram {
+      font-family: var(--font-serif);
+      font-size: 5rem;
+      font-weight: 600;
+      color: var(--accent);
+      opacity: 0.4;
+      user-select: none;
+    }
+    .hero-stats-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      flex-shrink: 0;
+    }
+    .hero-stat {
+      padding: 1.2rem 1.2rem;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      text-align: center;
+      margin-top: -1px;
+      min-width: 90px;
+    }
+    .hero-stat-num {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      line-height: 1;
+      display: block;
+    }
+    .hero-stat-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: block;
+      margin-top: 0.3rem;
+    }
+
+    /* ── SECTIONS ── */
+    .section { padding: 7rem 5vw; }
+    .section-alt { background: var(--white); }
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+    }
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 1rem;
+    }
+    .section-title em { font-style: italic; color: var(--accent); }
+    .section-sub {
+      font-size: 0.92rem;
+      font-weight: 300;
+      line-height: 1.8;
+      color: var(--muted);
+      max-width: 520px;
+    }
+
+    /* ── EXPERIENCE ── */
+    .experience-grid {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 0;
+      margin-top: 4rem;
+      position: relative;
+    }
+    .exp-timeline {
+      position: relative;
+      padding-right: 3rem;
+    }
+    .exp-timeline::after {
+      content: '';
+      position: absolute;
+      top: 8px; right: 1.5rem;
+      bottom: 0; width: 1px;
+      background: var(--border);
+    }
+    .exp-items { display: flex; flex-direction: column; gap: 3.5rem; }
+    .exp-item { position: relative; }
+    .exp-dot {
+      position: absolute;
+      right: calc(-1.5rem - 5px);
+      top: 8px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 2px solid var(--accent);
+      z-index: 1;
+    }
+    .exp-dot.current { background: var(--accent); }
+    .exp-period {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+    .exp-company {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+    .exp-content {}
+    .exp-role {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      margin-bottom: 0.3rem;
+    }
+    .exp-org {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .exp-org-badge {
+      font-size: 0.65rem;
+      background: var(--accent-light);
+      color: var(--accent-dark);
+      border: 1px solid rgba(224,123,57,0.2);
+      padding: 0.15rem 0.6rem;
+      border-radius: 100px;
+    }
+    .exp-bullets {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 0.6rem;
+    }
+    .exp-bullets li {
+      font-size: 0.875rem;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink2);
+      padding-left: 1.2rem;
+      position: relative;
+    }
+    .exp-bullets li::before {
+      content: '—';
+      position: absolute; left: 0;
+      color: var(--accent);
+      font-size: 0.75rem;
+    }
+    .exp-bullets li strong { font-weight: 500; color: var(--ink); }
+    .exp-tags {
+      display: flex; flex-wrap: wrap; gap: 0.4rem;
+      margin-top: 1rem;
+    }
+    .exp-tag {
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.7rem;
+      border-radius: 100px;
+    }
+
+    /* ── SKILLS ── */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+    }
+    .skill-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.8rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .skill-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.06); }
+    .skill-card-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: var(--accent-light);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+    .skill-card-title {
+      font-family: var(--font-serif);
+      font-size: 1.05rem;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 0.8rem;
+    }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .skill-tag {
+      font-size: 0.72rem;
+      font-weight: 400;
+      color: var(--ink2);
+      background: var(--white);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.8rem;
+      border-radius: 100px;
+    }
+
+    /* ── PROJECTS / GTM ── */
+    .project-hero {
+      background: var(--ink);
+      border-radius: 16px;
+      padding: 4rem;
+      margin-top: 3.5rem;
+      position: relative;
+      overflow: hidden;
+      color: var(--white);
+    }
+    .project-hero::before {
+      content: '';
+      position: absolute;
+      top: -100px; right: -100px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(224,123,57,0.15) 0%, transparent 70%);
+    }
+    .project-hero-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+    }
+    .project-hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .project-hero-sub {
+      font-size: 0.9rem;
+      font-weight: 300;
+      line-height: 1.8;
+      color: rgba(248,247,244,0.65);
+      max-width: 600px;
+      margin-bottom: 2.5rem;
+    }
+    .project-meta {
+      display: flex; gap: 2rem; flex-wrap: wrap;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .project-meta-item {}
+    .project-meta-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(248,247,244,0.4);
+      margin-bottom: 0.3rem;
+    }
+    .project-meta-val {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--white);
+    }
+
+    /* GTM ROADMAP */
+    .roadmap-wrap {
+      margin-top: 3rem;
+      position: relative;
+    }
+    .roadmap-phases {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .roadmap-phase {
+      background: var(--white);
+      padding: 2rem 1.5rem;
+      position: relative;
+      transition: background 0.2s;
+    }
+    .roadmap-phase:hover { background: var(--bg); }
+    .roadmap-phase-num {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .roadmap-phase-title {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 0.4rem;
+      line-height: 1.2;
+    }
+    .roadmap-phase-timing {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      margin-bottom: 1rem;
+    }
+    .roadmap-phase-items {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .roadmap-phase-items li {
+      font-size: 0.78rem;
+      font-weight: 300;
+      line-height: 1.5;
+      color: var(--ink2);
+      padding-left: 1rem;
+      position: relative;
+    }
+    .roadmap-phase-items li::before {
+      content: '·';
+      position: absolute; left: 0;
+      color: var(--accent);
+      font-size: 1.2rem;
+      line-height: 1;
+      top: 1px;
+    }
+    .roadmap-phase-kpi {
+      margin-top: 1.2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.7rem;
+      font-weight: 400;
+      color: var(--muted);
+    }
+    .roadmap-phase-kpi strong { color: var(--green); font-weight: 500; }
+    .roadmap-insight {
+      margin-top: 1.5rem;
+      background: var(--accent-light);
+      border: 1px solid rgba(224,123,57,0.2);
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2rem;
+    }
+    .insight-item {}
+    .insight-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent-dark);
+      margin-bottom: 0.3rem;
+    }
+    .insight-val {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--ink);
+    }
+    .insight-desc {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 0.2rem;
+    }
+
+    /* ── SIDE PROJECTS ── */
+    .side-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+    }
+    .side-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--white);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .side-card:hover { transform: translateY(-3px); box-shadow: 0 10px 40px rgba(0,0,0,0.07); }
+    .side-card-header {
+      padding: 2rem 2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    }
+    .side-card-icon {
+      width: 48px; height: 48px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .side-card-icon.orange { background: var(--accent-light); }
+    .side-card-icon.red { background: #FEE8E8; }
+    .side-card-link {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid rgba(224,123,57,0.3);
+      padding: 0.3rem 0.8rem;
+      border-radius: 100px;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .side-card-link:hover { background: var(--accent-light); }
+    .side-card-body { padding: 1.5rem 2rem 2rem; }
+    .side-card-title {
+      font-family: var(--font-serif);
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 0.7rem;
+      letter-spacing: -0.01em;
+    }
+    .side-card-desc {
+      font-size: 0.85rem;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink2);
+      margin-bottom: 1.2rem;
+    }
+    .side-card-stats {
+      display: flex; gap: 1.5rem;
+    }
+    .side-stat {}
+    .side-stat-num {
+      font-family: var(--font-serif);
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: var(--accent);
+      display: block; line-height: 1;
+    }
+    .side-stat-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.2rem;
+      display: block;
+    }
+
+    /* ── CERTIFICATIONS ── */
+    .cert-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 3rem;
+    }
+    .cert-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      display: flex; gap: 1rem; align-items: flex-start;
+      transition: transform 0.2s;
+    }
+    .cert-card:hover { transform: translateY(-2px); }
+    .cert-icon {
+      width: 40px; height: 40px; flex-shrink: 0;
+      border-radius: 8px;
+      background: var(--accent-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .cert-name {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 0.2rem;
+      line-height: 1.3;
+    }
+    .cert-issuer {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .cert-year {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--accent);
+      margin-top: 0.3rem;
+    }
+
+    /* ── CONTACT ── */
+    #contact {
+      background: var(--ink);
+      color: var(--white);
+    }
+    #contact .section-label { color: var(--accent); }
+    #contact .section-title { color: var(--white); }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      margin-top: 3.5rem;
+      align-items: start;
+    }
+    .contact-left {}
+    .contact-desc {
+      font-size: 0.92rem;
+      font-weight: 300;
+      line-height: 1.8;
+      color: rgba(248,247,244,0.6);
+      margin-bottom: 2.5rem;
+    }
+    .contact-links { display: flex; flex-direction: column; gap: 1rem; }
+    .contact-link {
+      display: flex; align-items: center; gap: 1rem;
+      text-decoration: none;
+      padding: 1rem 1.2rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      transition: border-color 0.2s, background 0.2s;
+      color: var(--white);
+    }
+    .contact-link:hover { border-color: var(--accent); background: rgba(224,123,57,0.08); }
+    .contact-link-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .contact-link-text { flex: 1; }
+    .contact-link-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(248,247,244,0.4);
+      display: block; margin-bottom: 0.15rem;
+    }
+    .contact-link-val {
+      font-size: 0.88rem;
+      font-weight: 400;
+      color: var(--white);
+    }
+    .contact-link-arrow {
+      color: rgba(248,247,244,0.3);
+      font-size: 0.9rem;
+      transition: color 0.2s, transform 0.2s;
+    }
+    .contact-link:hover .contact-link-arrow { color: var(--accent); transform: translateX(3px); }
+    .contact-right {}
+    .contact-form { display: flex; flex-direction: column; gap: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(248,247,244,0.4);
+    }
+    .form-input, .form-textarea {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      color: var(--white);
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      font-weight: 300;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: var(--accent); }
+    .form-input::placeholder, .form-textarea::placeholder { color: rgba(248,247,244,0.25); }
+    .form-textarea { resize: vertical; min-height: 110px; }
+    .form-submit {
+      font-size: 0.8rem; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--white); background: var(--accent);
+      border: none; padding: 1rem 2rem;
+      border-radius: 100px; cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      width: fit-content;
+    }
+    .form-submit:hover { background: var(--accent-dark); transform: translateY(-2px); }
+    .form-success {
+      display: none;
+      font-size: 0.85rem;
+      color: var(--accent);
+      padding: 0.8rem;
+      border: 1px solid rgba(224,123,57,0.3);
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--ink);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 2rem 5vw;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-name {
+      font-family: var(--font-serif);
+      font-size: 0.9rem;
+      color: rgba(248,247,244,0.4);
+    }
+    .footer-name span { color: var(--accent); }
+    .footer-copy {
+      font-size: 0.72rem;
+      color: rgba(248,247,244,0.2);
+      font-family: var(--font-mono);
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.7s ease forwards;
+    }
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .reveal:nth-child(1) { animation-delay: 0.05s; }
+    .reveal:nth-child(2) { animation-delay: 0.15s; }
+    .reveal:nth-child(3) { animation-delay: 0.25s; }
+    .reveal:nth-child(4) { animation-delay: 0.35s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      nav { padding: 1.2rem 5vw; }
+      .nav-links, .nav-hire { display: none; }
+      .hamburger { display: flex; }
+      .hero { grid-template-columns: 1fr; }
+      .hero-right { display: none; }
+      .hero-left { padding: 4rem 5vw 5rem; }
+      .experience-grid { grid-template-columns: 1fr; }
+      .exp-timeline { display: none; }
+      .roadmap-phases { grid-template-columns: 1fr 1fr; }
+      .side-grid { grid-template-columns: 1fr; }
+      .contact-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .roadmap-insight { grid-template-columns: 1fr; gap: 1rem; }
+    }
+    @media (max-width: 600px) {
+      .roadmap-phases { grid-template-columns: 1fr; }
+      .section { padding: 5rem 5vw; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a class="nav-name" href="#home">Vinay <span>Jagadish</span></a>
+  <ul class="nav-links">
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#side">Side Projects</a></li>
+    <li><a href="gst.html">GST Assistant</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a class="nav-hire" href="#contact">Hire Me</a>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#experience" onclick="toggleMenu()">Experience</a>
+  <a href="#skills" onclick="toggleMenu()">Skills</a>
+  <a href="#projects" onclick="toggleMenu()">Projects</a>
+  <a href="#side" onclick="toggleMenu()">Side Projects</a>
+  <a href="gst.html" onclick="toggleMenu()">GST Assistant</a>
+  <a href="#contact" onclick="toggleMenu()">Contact</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-left">
+    <div class="hero-badge">Open to PM & Program Manager roles</div>
+    <h1 class="hero-title">
+      Vinay<br><em>Jagadish</em>
+    </h1>
+    <p class="hero-tagline">7 years of cross-functional chaos — delivered on time.</p>
+    <p class="hero-bio">
+      Business Analyst & Product Ops Lead with experience driving outcomes across <strong>procurement, content, growth, and AI tooling</strong> at IBM, Flipkart, and LinkedIn. I connect strategy to execution — and I have the metrics to prove it.
+    </p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="#projects">See My Pitch</a>
+      <a class="btn-outline" href="#experience">View Experience</a>
+    </div>
+    <div class="hero-companies">
+      <span class="hero-companies-label">Worked at</span>
+      <span class="company-pill">IBM</span>
+      <span class="company-pill">Flipkart</span>
+      <span class="company-pill">LinkedIn</span>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-photo-wrap">
+      <div class="hero-photo-bg"></div>
+      <div class="hero-photo" id="heroPhoto">
+        <img src="data:image/jpeg;base64,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" alt="Vinay Jagadish" />
+        
+      </div>
+    </div>
+    <div class="hero-stats-col">
+      <div class="hero-stat">
+        <span class="hero-stat-num">7+</span>
+        <span class="hero-stat-label">Years</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">3</span>
+        <span class="hero-stat-label">Companies</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">40%</span>
+        <span class="hero-stat-label">Defect Reduction</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="section section-alt" id="experience">
+  <div class="reveal">
+    <p class="section-label">Career Timeline</p>
+    <h2 class="section-title">Where I've <em>shipped</em> things</h2>
+  </div>
+  <div class="experience-grid reveal">
+    <div class="exp-timeline"><!-- decorative --></div>
+    <div class="exp-items">
+
+      <div class="exp-item">
+        <div class="exp-dot current"></div>
+        <div class="exp-role">Business Analyst / Product Ops Lead</div>
+        <div class="exp-org">
+          IBM · Bengaluru
+          <span class="exp-org-badge">Current</span>
+        </div>
+        <ul class="exp-bullets">
+          <li>Spearheaded end-to-end UAT across <strong>4 quarterly release cycles</strong>, delivering 100% defect-free releases.</li>
+          <li>Facilitated daily Agile scrum for a <strong>12-person cross-functional team</strong>, reducing platform defects by 40% and improving sprint delivery by 30%.</li>
+          <li>Designed & deployed a <strong>WatsonX AI onboarding assistant</strong>, cutting supplier onboarding time by 25% and boosting self-service adoption by 40%.</li>
+          <li>Led onboarding of <strong>100+ high-value B2B suppliers</strong>, contributing to a 5% uplift in procurement-driven revenue.</li>
+          <li>Improved post-purchase NPS by <strong>9 points</strong> by driving first-time fill rate from 82% → 96%.</li>
+        </ul>
+        <div class="exp-tags">
+          <span class="exp-tag">Agile / Scrum</span>
+          <span class="exp-tag">UAT</span>
+          <span class="exp-tag">WatsonX AI</span>
+          <span class="exp-tag">Procurement Ops</span>
+          <span class="exp-tag">B2B</span>
+          <span class="exp-tag">SLA Management</span>
+        </div>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-dot"></div>
+        <div class="exp-role">Data Analyst</div>
+        <div class="exp-org">Flipkart · Bengaluru</div>
+        <ul class="exp-bullets">
+          <li>Analyzed UGC across <strong>5 key verticals</strong>; A/B testing drove 15% increase in content engagement.</li>
+          <li>Improved customer review quality score by <strong>18% over 6 months</strong> via weekly RCA of 2,000+ behaviour metrics.</li>
+          <li>Leveraged <strong>Adobe Analytics</strong> across 1M+ monthly user sessions to drive content optimisation and UI improvements.</li>
+          <li>Managed a content calendar for <strong>15+ high-impact campaigns per quarter</strong>, delivering 28% uplift in engagement and 18% increase in CTR.</li>
+          <li>Reported 50+ UI/UX bugs during campaign rollouts, reducing support tickets by <strong>20%</strong>.</li>
+        </ul>
+        <div class="exp-tags">
+          <span class="exp-tag">Data Analysis</span>
+          <span class="exp-tag">A/B Testing</span>
+          <span class="exp-tag">Tableau</span>
+          <span class="exp-tag">Adobe Analytics</span>
+          <span class="exp-tag">UGC</span>
+          <span class="exp-tag">REST APIs</span>
+        </div>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-dot"></div>
+        <div class="exp-role">Content Analyst</div>
+        <div class="exp-org">LinkedIn</div>
+        <ul class="exp-bullets">
+          <li>Investigated and actioned <strong>500+ accounts</strong> for platform policy violations.</li>
+          <li>Resolved <strong>1,200+ platform and account risk queries</strong>, maintaining SLA targets.</li>
+          <li>Contributed to <strong>policy-making</strong> on geopolitically sensitive content areas.</li>
+          <li>Supported <strong>ML data labelling</strong> by contributing to training data sampling for auto-labelling models.</li>
+        </ul>
+        <div class="exp-tags">
+          <span class="exp-tag">Trust & Safety</span>
+          <span class="exp-tag">Policy</span>
+          <span class="exp-tag">ML Data Labelling</span>
+          <span class="exp-tag">Risk Management</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="section" id="skills">
+  <div class="reveal">
+    <p class="section-label">Capabilities</p>
+    <h2 class="section-title">Skills & <em>Tools</em></h2>
+    <p class="section-sub">A hybrid profile built across product, data, and operations — with the tools to back it up.</p>
+  </div>
+  <div class="skills-grid">
+    <div class="skill-card reveal">
+      <div class="skill-card-icon">📋</div>
+      <div class="skill-card-title">Project Management</div>
+      <div class="skill-tags">
+        <span class="skill-tag">Agile</span>
+        <span class="skill-tag">Scrum</span>
+        <span class="skill-tag">UAT</span>
+        <span class="skill-tag">Stakeholder Mgmt</span>
+        <span class="skill-tag">Incident Mgmt</span>
+        <span class="skill-tag">Change Mgmt</span>
+        <span class="skill-tag">JIRA</span>
+        <span class="skill-tag">Trello</span>
+        <span class="skill-tag">Asana</span>
+      </div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-card-icon">📊</div>
+      <div class="skill-card-title">Data & Analytics</div>
+      <div class="skill-tags">
+        <span class="skill-tag">SQL</span>
+        <span class="skill-tag">Tableau</span>
+        <span class="skill-tag">Adobe Analytics</span>
+        <span class="skill-tag">A/B Testing</span>
+        <span class="skill-tag">Excel (Advanced)</span>
+        <span class="skill-tag">RCA</span>
+      </div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-card-icon">⚙️</div>
+      <div class="skill-card-title">Operations & Compliance</div>
+      <div class="skill-tags">
+        <span class="skill-tag">SLA Management</span>
+        <span class="skill-tag">SOP Development</span>
+        <span class="skill-tag">Vendor Management</span>
+        <span class="skill-tag">ERP Support</span>
+        <span class="skill-tag">SAP / Ariba</span>
+        <span class="skill-tag">ServiceNow</span>
+      </div>
+    </div>
+    <div class="skill-card reveal">
+      <div class="skill-card-icon">🤖</div>
+      <div class="skill-card-title">Product & AI Tools</div>
+      <div class="skill-tags">
+        <span class="skill-tag">WatsonX AI</span>
+        <span class="skill-tag">Postman</span>
+        <span class="skill-tag">REST APIs</span>
+        <span class="skill-tag">Product Ops</span>
+        <span class="skill-tag">Procurement Tech</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED PROJECT / GTM PITCH -->
+<section class="section section-alt" id="projects">
+  <div class="reveal">
+    <p class="section-label">Featured Projects</p>
+    <h2 class="section-title">PM Work & <em>Case Studies</em></h2>
+    <p class="section-sub">Real product thinking — a GTM strategy pitch and a full PM case study, both built from scratch.</p>
+  </div>
+
+  <div class="project-hero reveal">
+    <p class="project-hero-label">Strategy Document · Meesho</p>
+    <h3 class="project-hero-title">Meesho Credit: Embedded BNPL<br>for Tier 2/3 Social Sellers</h3>
+    <p class="project-hero-sub">
+      Meesho's 15M+ resellers in Tier 2/3 India face a critical friction point — cash flow. Most resellers are sole proprietors who need to pay suppliers upfront before collecting from buyers. My pitch: launch an embedded Buy Now Pay Later feature natively inside the Meesho seller app, removing the #1 blocker to GMV growth in underserved markets.
+    </p>
+    <div class="project-meta">
+      <div class="project-meta-item">
+        <div class="project-meta-label">Target Market</div>
+        <div class="project-meta-val">Tier 2 / Tier 3 India</div>
+      </div>
+      <div class="project-meta-item">
+        <div class="project-meta-label">Feature Type</div>
+        <div class="project-meta-val">Embedded Fintech / BNPL</div>
+      </div>
+      <div class="project-meta-item">
+        <div class="project-meta-label">Timeline</div>
+        <div class="project-meta-val">12-Month Roadmap</div>
+      </div>
+      <div class="project-meta-item">
+        <div class="project-meta-label">North Star Metric</div>
+        <div class="project-meta-val">Active Sellers × GMV per Seller</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="roadmap-wrap reveal">
+    <div class="roadmap-phases">
+      <div class="roadmap-phase">
+        <div class="roadmap-phase-num">Phase 01</div>
+        <div class="roadmap-phase-title">Discovery & Validation</div>
+        <div class="roadmap-phase-timing">Months 1 – 2</div>
+        <ul class="roadmap-phase-items">
+          <li>Interview 200+ resellers on cash flow pain points</li>
+          <li>Map competitor BNPL landscape (Khatabook, OkCredit)</li>
+          <li>Identify NBFC / fintech lending partners</li>
+          <li>Define credit scoring model inputs</li>
+          <li>Regulatory scoping (RBI digital lending norms)</li>
+        </ul>
+        <div class="roadmap-phase-kpi">KPI: <strong>Research report + partner LOI signed</strong></div>
+      </div>
+      <div class="roadmap-phase">
+        <div class="roadmap-phase-num">Phase 02</div>
+        <div class="roadmap-phase-title">MVP Build & Pilot</div>
+        <div class="roadmap-phase-timing">Months 3 – 5</div>
+        <ul class="roadmap-phase-items">
+          <li>Build in-app credit eligibility flow</li>
+          <li>Integrate BNPL checkout into order placement</li>
+          <li>Pilot with 5,000 sellers in 3 cities</li>
+          <li>Set up repayment UX (UPI auto-debit)</li>
+          <li>Real-time ops dashboard for credit ops team</li>
+        </ul>
+        <div class="roadmap-phase-kpi">KPI: <strong>Pilot activation rate ≥ 30%</strong></div>
+      </div>
+      <div class="roadmap-phase">
+        <div class="roadmap-phase-num">Phase 03</div>
+        <div class="roadmap-phase-title">Scale & Iterate</div>
+        <div class="roadmap-phase-timing">Months 6 – 9</div>
+        <ul class="roadmap-phase-items">
+          <li>Roll out to top 10 states by reseller density</li>
+          <li>A/B test credit limit tiers (₹5K / ₹15K / ₹30K)</li>
+          <li>Launch referral incentive for credit adoption</li>
+          <li>Reduce default rate via ML repayment signals</li>
+          <li>Add vernacular language support (7 languages)</li>
+        </ul>
+        <div class="roadmap-phase-kpi">KPI: <strong>100K active credit users</strong></div>
+      </div>
+      <div class="roadmap-phase">
+        <div class="roadmap-phase-num">Phase 04</div>
+        <div class="roadmap-phase-title">Monetise & Expand</div>
+        <div class="roadmap-phase-timing">Months 10 – 12</div>
+        <ul class="roadmap-phase-items">
+          <li>Introduce revenue share with lending partners</li>
+          <li>Launch "Meesho Gold" seller tier for top credit users</li>
+          <li>Expand to inventory financing (B2B credit)</li>
+          <li>Build seller credit score as a trust signal</li>
+          <li>PR + press: "Meesho backs India's resellers"</li>
+        </ul>
+        <div class="roadmap-phase-kpi">KPI: <strong>₹500Cr GMV incremental lift</strong></div>
+      </div>
+    </div>
+
+    <div class="roadmap-insight">
+      <div class="insight-item">
+        <div class="insight-label">Opportunity Size</div>
+        <div class="insight-val">15M+ Sellers</div>
+        <div class="insight-desc">Meesho's reseller base, mostly women entrepreneurs in Tier 2/3 cities with no formal credit access</div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-label">Projected GMV Lift</div>
+        <div class="insight-val">+18–22%</div>
+        <div class="insight-desc">Based on Khatabook data showing ~20% order volume increase post-credit access among SMBs</div>
+      </div>
+      <div class="insight-item">
+        <div class="insight-label">Why I'm Qualified</div>
+        <div class="insight-val">Built This</div>
+        <div class="insight-desc">I led B2B supplier onboarding & procurement ops at IBM and ran my own ecommerce ops on Amazon/Flipkart</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONEPE CASE STUDY -->
+  <div class="reveal" style="margin-top: 3rem;">
+
+    <!-- Case study top card -->
+    <div style="background: var(--white); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;">
+
+      <!-- Header bar -->
+      <div style="background: var(--ink); padding: 2.5rem 3rem; position: relative; overflow: hidden;">
+        <div style="position:absolute;top:-80px;right:-80px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,0.15) 0%,transparent 70%);pointer-events:none;"></div>
+        <p style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.22em;text-transform:uppercase;color:#818cf8;margin-bottom:0.7rem;">PM Case Study · NextLeap</p>
+        <h3 style="font-family:var(--font-serif);font-size:clamp(1.5rem,2.5vw,2.2rem);font-weight:300;line-height:1.1;letter-spacing:-0.02em;color:var(--white);margin-bottom:0.9rem;">PhonePe AILA — AI Language Assistant<br>for Rural & Semi-Urban UPI Users</h3>
+        <p style="font-size:0.88rem;font-weight:300;line-height:1.8;color:rgba(248,247,244,0.6);max-width:640px;margin-bottom:2rem;">
+          A full end-to-end PM case study solving PhonePe's feature adoption problem among rural and semi-urban users. Includes user research, personas, problem framing, RICE-scored ideation, wireframe flows, system design, and a metrics framework using the AARRR model.
+        </p>
+        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.1);">
+          <div><p style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(248,247,244,0.35);margin-bottom:0.3rem;">Company</p><p style="font-size:0.85rem;font-weight:500;color:var(--white);">PhonePe</p></div>
+          <div><p style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(248,247,244,0.35);margin-bottom:0.3rem;">Problem</p><p style="font-size:0.85rem;font-weight:500;color:var(--white);">Feature adoption in rural India</p></div>
+          <div><p style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(248,247,244,0.35);margin-bottom:0.3rem;">Solution</p><p style="font-size:0.85rem;font-weight:500;color:var(--white);">NLP-powered multilingual chatbot</p></div>
+          <div><p style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(248,247,244,0.35);margin-bottom:0.3rem;">Framework</p><p style="font-size:0.85rem;font-weight:500;color:var(--white);">AARRR + RICE Scoring</p></div>
+          <div style="margin-left:auto;display:flex;align-items:center;">
+            <a href="https://assets.nextleap.app/submissions/NL_PhonePe-b85599a7-8fe6-405d-8dd9-40a4ee60f064.pdf" target="_blank" rel="noopener"
+               style="display:inline-flex;align-items:center;gap:0.5rem;font-size:0.78rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--white);background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);padding:0.7rem 1.4rem;border-radius:100px;text-decoration:none;transition:background 0.2s;"
+               onmouseover="this.style.background='rgba(255,255,255,0.18)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+              View Full Case Study ↗
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key highlights grid -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;background:var(--border);">
+
+        <div style="background:var(--white);padding:1.8rem 2rem;border-right:0px;">
+          <div style="width:32px;height:3px;background:#818cf8;margin-bottom:1rem;border-radius:2px;"></div>
+          <p style="font-family:var(--font-serif);font-size:1rem;font-weight:400;color:var(--ink);margin-bottom:0.5rem;">User Research</p>
+          <p style="font-size:0.78rem;font-weight:300;line-height:1.65;color:var(--muted);">Interviewed urban & rural users across 5 segments. Identified that 4/5 users never use PhonePe beyond P2P payments.</p>
+        </div>
+
+        <div style="background:var(--white);padding:1.8rem 2rem;">
+          <div style="width:32px;height:3px;background:var(--accent);margin-bottom:1rem;border-radius:2px;"></div>
+          <p style="font-family:var(--font-serif);font-size:1rem;font-weight:400;color:var(--ink);margin-bottom:0.5rem;">RICE Prioritisation</p>
+          <p style="font-size:0.78rem;font-weight:300;line-height:1.65;color:var(--muted);">Scored 2 solutions — AILA (AI chatbot) scored 8.3 vs Spend Dashboard at 6.0. Selected AILA as primary build.</p>
+        </div>
+
+        <div style="background:var(--white);padding:1.8rem 2rem;">
+          <div style="width:32px;height:3px;background:var(--green);margin-bottom:1rem;border-radius:2px;"></div>
+          <p style="font-family:var(--font-serif);font-size:1rem;font-weight:400;color:var(--ink);margin-bottom:0.5rem;">Product Solution</p>
+          <p style="font-size:0.78rem;font-weight:300;line-height:1.65;color:var(--muted);">NLP chatbot trained on FAQs, SOPs, and app data — guiding users step-by-step in their regional language.</p>
+        </div>
+
+        <div style="background:var(--white);padding:1.8rem 2rem;">
+          <div style="width:32px;height:3px;background:var(--ink);margin-bottom:1rem;border-radius:2px;"></div>
+          <p style="font-family:var(--font-serif);font-size:1rem;font-weight:400;color:var(--ink);margin-bottom:0.5rem;">North Star Metric</p>
+          <p style="font-size:0.78rem;font-weight:300;line-height:1.65;color:var(--muted);">Monthly Transaction Volume — tracking acquisition, activation, retention, revenue & referral via AARRR.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- SIDE PROJECTS -->
+<section class="section" id="side">
+  <div class="reveal">
+    <p class="section-label">Beyond the Day Job</p>
+    <h2 class="section-title">Side <em>Projects</em></h2>
+    <p class="section-sub">I don't just manage products — I build them. Two independent ventures running entirely by myself.</p>
+  </div>
+  <div class="side-grid">
+    <div class="side-card reveal">
+      <div class="side-card-header">
+        <div class="side-card-icon orange">🏋️</div>
+        <a class="side-card-link" href="https://www.instagram.com/vyayama.in" target="_blank" rel="noopener">View ↗</a>
+      </div>
+      <div class="side-card-body">
+        <div class="side-card-title">Vyayama — Traditional Fitness Tools</div>
+        <div class="side-card-desc">
+          An Instagram-first ecommerce brand selling Indian traditional workout tools on Amazon and Flipkart. I handle everything solo — product development, sourcing, content creation, video editing, marketing, packaging, and customer engagement. A real-world PM exercise in building from 0 to 1.
+        </div>
+        <div class="side-card-stats">
+          <div class="side-stat">
+            <span class="side-stat-num">2</span>
+            <span class="side-stat-label">Marketplaces</span>
+          </div>
+          <div class="side-stat">
+            <span class="side-stat-num">100%</span>
+            <span class="side-stat-label">Self-Operated</span>
+          </div>
+          <div class="side-stat">
+            <span class="side-stat-num">End-to-End</span>
+            <span class="side-stat-label">Ops Ownership</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="side-card reveal">
+      <div class="side-card-header">
+        <div class="side-card-icon red">▶️</div>
+        <a class="side-card-link" href="https://www.youtube.com/channel/UCxHwN0ersr5aqVXwORWvw4A" target="_blank" rel="noopener">Watch ↗</a>
+      </div>
+      <div class="side-card-body">
+        <div class="side-card-title">Vinay Aivara — YouTube Creator</div>
+        <div class="side-card-desc">
+          A YouTube channel where I vlog about travel, festivals, people, and interesting events across India. Built an organic audience without paid promotion — learning content strategy, audience retention, and storytelling along the way. Every metric tracked, every upload iterated on.
+        </div>
+        <div class="side-card-stats">
+          <div class="side-stat">
+            <span class="side-stat-num">5K+</span>
+            <span class="side-stat-label">Subscribers</span>
+          </div>
+          <div class="side-stat">
+            <span class="side-stat-num">3</span>
+            <span class="side-stat-label">Years</span>
+          </div>
+          <div class="side-stat">
+            <span class="side-stat-num">100%</span>
+            <span class="side-stat-label">Organic Growth</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CERTIFICATIONS -->
+<section class="section section-alt" id="certifications">
+  <div class="reveal">
+    <p class="section-label">Credentials</p>
+    <h2 class="section-title">Certifications</h2>
+  </div>
+  <div class="cert-grid">
+    <div class="cert-card reveal">
+      <div class="cert-icon">🏅</div>
+      <div>
+        <div class="cert-name">Agile Advocate</div>
+        <div class="cert-issuer">IBM</div>
+        <div class="cert-year">2023</div>
+      </div>
+    </div>
+    <div class="cert-card reveal">
+      <div class="cert-icon">💻</div>
+      <div>
+        <div class="cert-name">SQL for Product Managers</div>
+        <div class="cert-issuer">HackerRank</div>
+        <div class="cert-year">2023</div>
+      </div>
+    </div>
+    <div class="cert-card reveal">
+      <div class="cert-icon">🚀</div>
+      <div>
+        <div class="cert-name">Product Manager Fellowship</div>
+        <div class="cert-issuer">NextLeap</div>
+        <div class="cert-year">2023</div>
+      </div>
+    </div>
+    <div class="cert-card reveal">
+      <div class="cert-icon">🎓</div>
+      <div>
+        <div class="cert-name">B.E. Electrical & Electronics Engineering</div>
+        <div class="cert-issuer">VTU / Sapthagiri College of Engineering</div>
+        <div class="cert-year">2012 – 2016</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section" id="contact">
+  <div class="reveal">
+    <p class="section-label">Get In Touch</p>
+    <h2 class="section-title">Let's <em>talk</em></h2>
+  </div>
+  <div class="contact-grid">
+    <div class="contact-left reveal">
+      <p class="contact-desc">
+        I'm actively looking for PM and Program Manager roles where I can bring operational depth, strategic thinking, and a genuine builder's mindset. If you're hiring or want to collaborate — let's connect.
+      </p>
+      <div class="contact-links">
+        <a class="contact-link" href="/cdn-cgi/l/email-protection#2e5847404f57584740571f1a1f6e49434f4742004d4143">
+          <div class="contact-link-icon">✉️</div>
+          <div class="contact-link-text">
+            <span class="contact-link-label">Email</span>
+            <span class="contact-link-val"><span class="__cf_email__" data-cfemail="e197888f809897888f98d0d5d0a1868c80888dcf828e8c">[email&#160;protected]</span></span>
+          </div>
+          <span class="contact-link-arrow">→</span>
+        </a>
+        <a class="contact-link" href="https://www.linkedin.com/in/vinayjagadish-businessanalyst" target="_blank" rel="noopener">
+          <div class="contact-link-icon">💼</div>
+          <div class="contact-link-text">
+            <span class="contact-link-label">LinkedIn</span>
+            <span class="contact-link-val">vinayjagadish-businessanalyst</span>
+          </div>
+          <span class="contact-link-arrow">→</span>
+        </a>
+        <a class="contact-link" href="https://www.youtube.com/channel/UCxHwN0ersr5aqVXwORWvw4A" target="_blank" rel="noopener">
+          <div class="contact-link-icon">▶️</div>
+          <div class="contact-link-text">
+            <span class="contact-link-label">YouTube</span>
+            <span class="contact-link-val">Vinay Aivara</span>
+          </div>
+          <span class="contact-link-arrow">→</span>
+        </a>
+        <a class="contact-link" href="https://www.instagram.com/vyayama.in" target="_blank" rel="noopener">
+          <div class="contact-link-icon">📸</div>
+          <div class="contact-link-text">
+            <span class="contact-link-label">Instagram</span>
+            <span class="contact-link-val">@vyayama.in</span>
+          </div>
+          <span class="contact-link-arrow">→</span>
+        </a>
+        <a class="contact-link" href="#" download>
+          <div class="contact-link-icon">📄</div>
+          <div class="contact-link-text">
+            <span class="contact-link-label">Resume</span>
+            <span class="contact-link-val">Download PDF</span>
+          </div>
+          <span class="contact-link-arrow">↓</span>
+        </a>
+      </div>
+    </div>
+    <div class="contact-right reveal">
+      <form class="contact-form" onsubmit="handleForm(event)" id="contactForm">
+        <div class="form-group">
+          <label class="form-label">Your Name</label>
+          <input class="form-input" type="text" placeholder="Priya Sharma" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" placeholder="priya@company.com" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message</label>
+          <textarea class="form-textarea" placeholder="Tell me about the role / opportunity..."></textarea>
+        </div>
+        <button class="form-submit" type="submit">Send Message →</button>
+        <div class="form-success" id="formSuccess">✓ Message sent! I'll get back to you within 24 hours.</div>
+        <div id="formError" style="display:none;font-size:0.85rem;color:#f87171;padding:0.8rem;border:1px solid rgba(248,113,113,0.3);border-radius:8px;text-align:center;">Something went wrong. Please email me directly at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c9bfa0a7a8b0bfa0a7b0f8fdf889aea4a8a0a5e7aaa6a4">[email&#160;protected]</a></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-name">Vinay <span>Jagadish</span></span>
+  <span class="footer-copy">© 2025 · vinayjagadish.com</span>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // Nav scroll effect
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+  });
+
+  // Mobile menu
+  function toggleMenu() {
+    document.getElementById('mobileMenu').classList.toggle('open');
+  }
+
+  // Scroll reveal — works in all contexts including iframes
+  function revealOnScroll() {
+    document.querySelectorAll('.reveal').forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight - 40) {
+        el.style.animationPlayState = 'running';
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      }
+    });
+  }
+  // Pause all reveal animations initially, then play when in view
+  document.querySelectorAll('.reveal').forEach(el => {
+    el.style.animationPlayState = 'paused';
+  });
+  window.addEventListener('scroll', revealOnScroll, { passive: true });
+  // Run once on load for elements already in view
+  setTimeout(revealOnScroll, 100);
+
+  // Contact form — Formspree
+  async function handleForm(e) {
+    e.preventDefault();
+    const form = document.getElementById('contactForm');
+    const btn = form.querySelector('.form-submit');
+    const success = document.getElementById('formSuccess');
+    const error = document.getElementById('formError');
+
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    error.style.display = 'none';
+    success.style.display = 'none';
+
+    try {
+      const res = await fetch('https://formspree.io/f/mojpapge', {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        success.style.display = 'block';
+        form.reset();
+        btn.textContent = '✓ Sent!';
+        setTimeout(() => {
+          success.style.display = 'none';
+          btn.textContent = 'Send Message →';
+          btn.disabled = false;
+          btn.style.opacity = '1';
+        }, 5000);
+      } else {
+        thr
