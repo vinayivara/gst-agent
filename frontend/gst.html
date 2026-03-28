@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GST Registration Assistant</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f6f9; min-height: 100vh; }
+
+  /* ── Nav bar — matches a generic HTML site ── */
+  #site-nav { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 14px 32px; display: flex; align-items: center; gap: 16px; }
+  #site-nav a.back { font-size: 14px; color: #1D9E75; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+  #site-nav a.back:hover { text-decoration: underline; }
+  #site-nav .site-name { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-left: auto; }
+
+  /* ── Page layout ── */
+  .page-wrap { max-width: 720px; margin: 32px auto; padding: 0 16px 48px; }
+  .page-header { margin-bottom: 24px; }
+  .page-header h1 { font-size: 22px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+  .page-header p { font-size: 14px; color: #666; line-height: 1.6; }
+  .steps-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .step-pill { background: #e8f7f2; color: #0F6E56; font-size: 12px; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+
+  /* ── Chat container ── */
+  #app { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); display: flex; flex-direction: column; height: 620px; overflow: hidden; position: relative; }
+  #header { padding: 14px 20px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
+  .hlogo { width: 36px; height: 36px; border-radius: 50%; background: #1D9E75; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .hlogo svg { fill: white; }
+  .htitle { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+  .hsub { font-size: 12px; color: #888; margin-left: auto; }
+  #progress { height: 3px; background: #eee; }
+  #progress-fill { height: 100%; background: #1D9E75; width: 0%; transition: width 0.4s; }
+  #messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .msg { max-width: 80%; display: flex; flex-direction: column; gap: 3px; }
+  .msg.bot { align-self: flex-start; }
+  .msg.user { align-self: flex-end; }
+  .lbl { font-size: 11px; color: #aaa; padding: 0 4px; }
+  .msg.user .lbl { text-align: right; }
+  .bubble { padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
+  .msg.bot .bubble { background: #f1f3f6; color: #1a1a1a; border-bottom-left-radius: 4px; }
+  .msg.user .bubble { background: #1D9E75; color: #fff; border-bottom-right-radius: 4px; }
+  .msg.system .bubble { background: #fff8e1; color: #7a5c00; border: 1px solid #ffe082; border-radius: 10px; font-size: 13px; }
+  .msg.success .bubble { background: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; border-radius: 10px; }
+  .msg.error_ .bubble { background: #fdecea; color: #7f1d1d; border: 1px solid #f5c6c6; border-radius: 10px; }
+  .quick-replies { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .qr { padding: 6px 14px; border-radius: 20px; border: 1.5px solid #1D9E75; font-size: 13px; cursor: pointer; color: #1D9E75; background: #fff; transition: all 0.15s; }
+  .qr:hover { background: #1D9E75; color: #fff; }
+  .typing { display: flex; gap: 4px; align-items: center; padding: 10px 14px; }
+  .typing span { width: 7px; height: 7px; border-radius: 50%; background: #bbb; animation: bounce 1s infinite; }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+  #input-area { padding: 12px 16px; border-top: 1px solid #eee; display: flex; gap: 8px; align-items: flex-end; background: #fff; }
+  #user-input { flex: 1; resize: none; border: 1.5px solid #ddd; border-radius: 12px; padding: 10px 14px; font-size: 14px; font-family: inherit; color: #1a1a1a; outline: none; max-height: 100px; line-height: 1.4; }
+  #user-input:focus { border-color: #1D9E75; }
+  #send-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: #1D9E75; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  #send-btn:hover { background: #0F6E56; }
+  #send-btn:disabled { background: #ccc; cursor: not-allowed; }
+  #send-btn svg { fill: white; }
+  .upload-area { margin-top: 6px; border: 2px dashed #1D9E75; border-radius: 10px; padding: 14px; text-align: center; cursor: pointer; background: #f9fffe; }
+  .upload-area:hover { background: #e8f7f2; }
+  .upload-area input { display: none; }
+  .upload-area p { font-size: 13px; color: #1D9E75; font-weight: 500; margin-bottom: 3px; }
+  .upload-area span { font-size: 12px; color: #999; }
+  .upload-status { font-size: 12px; margin-top: 5px; }
+  .otp-area { display: flex; gap: 8px; margin-top: 8px; }
+  .otp-area input { flex: 1; border: 1.5px solid #1D9E75; border-radius: 10px; padding: 10px 14px; font-size: 20px; letter-spacing: 6px; text-align: center; outline: none; font-family: monospace; }
+  .otp-area button { padding: 10px 18px; border-radius: 10px; border: none; background: #1D9E75; color: #fff; font-size: 14px; cursor: pointer; font-weight: 600; }
+  .otp-area button:hover { background: #0F6E56; }
+  .arn-box { background: #e8f5e9; border: 1.5px solid #81c784; border-radius: 12px; padding: 16px 20px; margin-top: 8px; }
+  .arn-box h3 { font-size: 14px; color: #2e7d32; margin-bottom: 6px; }
+  .arn-box .arn-num { font-size: 20px; font-weight: 700; color: #1b5e20; letter-spacing: 2px; }
+  .arn-box p { font-size: 12px; color: #555; margin-top: 6px; }
+  #overlay { display: none; position: absolute; inset: 0; background: rgba(255,255,255,0.88); border-radius: 16px; z-index: 20; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+  #overlay.show { display: flex; }
+  .spinner { width: 36px; height: 36px; border: 3px solid #eee; border-top-color: #1D9E75; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #overlay p { font-size: 14px; color: #555; }
+</style>
+</head>
+<body>
+
+<!-- ── Navigation bar — UPDATE "Your Website" and href="/" to match your site ── -->
+<nav id="site-nav">
+  <a class="back" href="/">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#1D9E75"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    Back to Home
+  </a>
+  <!-- UPDATE this to your actual site/brand name -->
+  <span class="site-name">Your Website</span>
+</nav>
+
+<!-- ── Page header ── -->
+<div class="page-wrap">
+  <div class="page-header">
+    <h1>GST Registration Assistant</h1>
+    <p>Answer a few questions in the chat below. The agent will fill and submit your GST application automatically — you only need to enter the OTP when asked.</p>
+    <div class="steps-row">
+      <span class="step-pill">1. Answer questions</span>
+      <span class="step-pill">2. Upload documents</span>
+      <span class="step-pill">3. Enter OTP</span>
+      <span class="step-pill">4. Get ARN</span>
+    </div>
+  </div>
+
+  <!-- ── Chat app ── -->
+  <div id="app">
+    <div id="header">
+      <div class="hlogo">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </div>
+      <div>
+        <div class="htitle">GST Agent</div>
+      </div>
+      <div class="hsub" id="step-lbl">Getting started</div>
+    </div>
+    <div id="progress"><div id="progress-fill"></div></div>
+    <div id="messages"></div>
+    <div id="input-area">
+      <textarea id="user-input" rows="1" placeholder="Type your answer..."></textarea>
+      <button id="send-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+    <div id="overlay">
+      <div class="spinner"></div>
+      <p id="overlay-msg">Processing...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG — update this one line with your Render backend URL ────────────────
+const BACKEND = 'https://gst-agent.onrender.com'; // <-- REPLACE THIS
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let sessionId = null, ws = null, awaitingInput = false;
+let collected = {}, flow = [], currentStep = 0;
+let isTRNMode = false, uploadedFiles = {}, automationStarted = false;
+
+const trnFlow = [
+  { key: 'trn', ask: 'Please enter your TRN (15-character alphanumeric).', validate: v => /^[A-Z0-9]{15}$/i.test(v.trim()) ? null : 'TRN must be exactly 15 characters (letters and numbers only).' },
+  { key: 'businessName', ask: 'What is the legal name of your business? (Must match PAN exactly.)' },
+  { key: 'businessType', ask: 'What is your business entity type?', quickReplies: ['Sole Proprietorship', 'Partnership Firm', 'Private Limited Company', 'LLP / Other'] },
+  { key: 'businessAddress', ask: 'Full principal place of business address?\n\nInclude: Building no., street, city, state, PIN code.' },
+  { key: 'businessNature', ask: 'Briefly describe your business and main goods/services.' },
+  { key: 'hsn', ask: 'HSN code (goods) or SAC code (services)? Type "not sure" if unknown.' },
+  { key: 'bankAccount', ask: 'Bank account number and IFSC?\n\nFormat: AccountNo | IFSC' },
+  { key: 'authorisedSignatory', ask: 'Authorised signatory details?\n\nFormat: Full Name | Designation' },
+  { key: 'verificationMode', ask: 'How will you verify the submission?', quickReplies: ['EVC (OTP on mobile)', 'e-Sign (Aadhaar OTP)', 'DSC (Digital Signature)'] },
+  { key: '_docs', ask: 'upload_docs' },
+];
+
+const freshFlow = [
+  { key: 'businessName', ask: 'What is the legal name of your business? (Must match PAN exactly.)' },
+  { key: 'pan', ask: 'What is your PAN number?', validate: v => /^[A-Z]{5}[0-9]{4}[A-Z]$/i.test(v.trim()) ? null : 'PAN format should be like ABCDE1234F.' },
+  { key: 'businessType', ask: 'What is your business entity type?', quickReplies: ['Sole Proprietorship', 'Partnership Firm', 'Private Limited Company', 'LLP / Other'] },
+  { key: 'stateOfRegistration', ask: 'In which state will your primary business be registered?' },
+  { key: 'businessAddress', ask: 'Full principal place of business address?\n\nInclude: Building no., street, city, state, PIN code.' },
+  { key: 'businessNature', ask: 'Briefly describe your business and main goods/services.' },
+  { key: 'hsn', ask: 'HSN code (goods) or SAC code (services)? Type "not sure" if unknown.' },
+  { key: 'bankAccount', ask: 'Bank account number and IFSC?\n\nFormat: AccountNo | IFSC' },
+  { key: 'mobileEmail', ask: 'Registered mobile and email?\n\nFormat: Mobile | Email' },
+  { key: 'verificationMode', ask: 'How will you verify the submission?', quickReplies: ['EVC (OTP on mobile)', 'e-Sign (Aadhaar OTP)', 'DSC (Digital Signature)'] },
+  { key: '_docs', ask: 'upload_docs' },
+];
+
+// ── DOM ───────────────────────────────────────────────────────────────────────
+const messagesEl = document.getElementById('messages');
+const inputEl = document.getElementById('user-input');
+const sendBtn = document.getElementById('send-btn');
+const progressFill = document.getElementById('progress-fill');
+const stepLbl = document.getElementById('step-lbl');
+const overlay = document.getElementById('overlay');
+const overlayMsg = document.getElementById('overlay-msg');
+
+function scrollBottom() { messagesEl.scrollTop = messagesEl.scrollHeight; }
+function showOverlay(msg) { overlayMsg.textContent = msg; overlay.classList.add('show'); }
+function hideOverlay() { overlay.classList.remove('show'); }
+
+function updateProgress() {
+  if (!flow.length) return;
+  const pct = Math.round((currentStep / flow.length) * 100);
+  progressFill.style.width = pct + '%';
+  stepLbl.textContent = `Step ${Math.min(currentStep, flow.length)} of ${flow.length}`;
+}
+
+function addMsg(text, type = 'bot', quickReplies = [], extraEl = null) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + type;
+  const lbl = document.createElement('div');
+  lbl.className = 'lbl';
+  lbl.textContent = type === 'user' ? 'You' : type === 'bot' ? 'GST Agent' : '';
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.textContent = text;
+  wrap.appendChild(lbl);
+  wrap.appendChild(bubble);
+  if (quickReplies.length) {
+    const qr = document.createElement('div');
+    qr.className = 'quick-replies';
+    quickReplies.forEach(r => {
+      const b = document.createElement('button');
+      b.className = 'qr'; b.textContent = r;
+      b.onclick = () => { if (awaitingInput) handleInput(r); };
+      qr.appendChild(b);
+    });
+    wrap.appendChild(qr);
+  }
+  if (extraEl) wrap.appendChild(extraEl);
+  messagesEl.appendChild(wrap);
+  scrollBottom();
+}
+
+function showTyping() {
+  const w = document.createElement('div');
+  w.className = 'msg bot'; w.id = 'typing';
+  const b = document.createElement('div');
+  b.className = 'bubble typing';
+  b.innerHTML = '<span></span><span></span><span></span>';
+  w.appendChild(b); messagesEl.appendChild(w); scrollBottom();
+}
+function removeTyping() { const t = document.getElementById('typing'); if (t) t.remove(); }
+
+async function botSay(text, quickReplies = [], extraEl = null, delay = 700) {
+  showTyping();
+  await new Promise(r => setTimeout(r, delay));
+  removeTyping();
+  addMsg(text, 'bot', quickReplies, extraEl);
+}
+
+function buildUploadUI() {
+  const docs = [
+    { key: 'pan', label: 'PAN Card', hint: 'PDF or image, max 5MB' },
+    { key: 'aadhaar', label: 'Aadhaar Card', hint: 'PDF or image, max 5MB' },
+    { key: 'addressProof', label: 'Address Proof', hint: 'Utility bill / rent agreement' },
+    { key: 'bankStatement', label: 'Bank Statement / Cancelled Cheque', hint: 'PDF, max 5MB' },
+    { key: 'photo', label: 'Proprietor / Director Photo', hint: 'JPG or PNG, max 2MB' },
+  ];
+  const container = document.createElement('div');
+  container.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-top:8px;';
+  docs.forEach(doc => {
+    const area = document.createElement('label');
+    area.className = 'upload-area';
+    area.innerHTML = `<input type="file" accept=".pdf,.jpg,.jpeg,.png" data-key="${doc.key}" /><p>📎 ${doc.label}</p><span>${doc.hint}</span><div class="upload-status" id="status-${doc.key}"></div>`;
+    area.querySelector('input').addEventListener('change', async (e) => {
+      const file = e.target.files[0]; if (!file) return;
+      const statusEl = document.getElementById('status-' + doc.key);
+      statusEl.textContent = 'Uploading...'; statusEl.style.color = '#888';
+      try {
+        const fd = new FormData(); fd.append(doc.key, file);
+        const res = await fetch(`${BACKEND}/api/session/${sessionId}/upload`, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.ok) { uploadedFiles[doc.key] = true; statusEl.textContent = '✓ ' + file.name; statusEl.style.color = '#1D9E75'; }
+      } catch { statusEl.textContent = '✗ Upload failed. Try again.'; statusEl.style.color = '#c62828'; }
+    });
+    container.appendChild(area);
+  });
+  const doneBtn = document.createElement('button');
+  doneBtn.textContent = 'All documents uploaded — continue →';
+  doneBtn.style.cssText = 'padding:12px;border-radius:10px;border:none;background:#1D9E75;color:#fff;font-size:14px;cursor:pointer;font-weight:600;margin-top:4px;';
+  doneBtn.onclick = () => {
+    if (!Object.keys(uploadedFiles).length) { alert('Please upload at least one document.'); return; }
+    addMsg('Documents uploaded ✓', 'user');
+    currentStep++; updateProgress(); startAutomation();
+  };
+  container.appendChild(doneBtn);
+  return container;
+}
+
+function showOTPInput(message) {
+  const container = document.createElement('div');
+  const label = document.createElement('p');
+  label.style.cssText = 'font-size:13px;color:#555;margin-bottom:6px;';
+  label.textContent = message;
+  const otpArea = document.createElement('div');
+  otpArea.className = 'otp-area';
+  const input = document.createElement('input');
+  input.type = 'text'; input.maxLength = 8; input.placeholder = '------'; input.autocomplete = 'one-time-code';
+  const btn = document.createElement('button');
+  btn.textContent = 'Submit OTP';
+  btn.onclick = async () => {
+    const otp = input.value.trim(); if (!otp) return;
+    btn.disabled = true; btn.textContent = 'Submitting...';
+    try {
+      await fetch(`${BACKEND}/api/session/${sessionId}/otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ otp }) });
+      addMsg('OTP submitted ✓', 'user'); btn.textContent = 'Submitted ✓';
+    } catch { btn.disabled = false; btn.textContent = 'Submit OTP'; alert('Failed. Try again.'); }
+  };
+  otpArea.appendChild(input); otpArea.appendChild(btn);
+  container.appendChild(label); container.appendChild(otpArea);
+  addMsg('', 'system', [], container);
+}
+
+function showARN(arnText) {
+  const box = document.createElement('div');
+  box.className = 'arn-box';
+  box.innerHTML = `<h3>Registration Submitted Successfully</h3><div class="arn-num">${arnText || 'ARN Generated'}</div><p>Save this ARN. Track your application on gst.gov.in — approval in 3–7 working days.</p>`;
+  addMsg('', 'success', [], box);
+}
+
+function connectWebSocket() {
+  const wsUrl = BACKEND.replace('https://', 'wss://').replace('http://', 'ws://');
+  ws = new WebSocket(`${wsUrl}?sessionId=${sessionId}`);
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    hideOverlay();
+    if (data.type === 'status') addMsg('⚙ ' + data.message, 'system');
+    else if (data.type === 'otp_required') showOTPInput(data.message);
+    else if (data.type === 'complete') { showARN(data.arn); sendBtn.disabled = true; inputEl.disabled = true; }
+    else if (data.type === 'error') { addMsg('Error: ' + data.message, 'error_'); hideOverlay(); }
+    scrollBottom();
+  };
+  ws.onclose = () => { if (automationStarted) setTimeout(connectWebSocket, 3000); };
+}
+
+async function startAutomation() {
+  automationStarted = true;
+  await fetch(`${BACKEND}/api/session/${sessionId}/data`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...collected, mode: isTRNMode ? 'TRN continuation' : 'Fresh registration' }) });
+  showOverlay('Starting GST portal automation...');
+  await botSay('All set! The agent is now logging into the GST portal and filling your application.\n\nStay on this page — I will ask for OTPs as needed.', [], null, 400);
+  connectWebSocket();
+  await fetch(`${BACKEND}/api/session/${sessionId}/automate`, { method: 'POST' });
+}
+
+async function handleInput(val) {
+  if (!val.trim() || !awaitingInput) return;
+  awaitingInput = false;
+  inputEl.value = ''; inputEl.style.height = 'auto';
+  if (flow.length === 0) {
+    addMsg(val, 'user');
+    isTRNMode = val.toLowerCase().includes('yes') || val.toLowerCase().includes('trn');
+    flow = isTRNMode ? trnFlow : freshFlow;
+    collected.mode = isTRNMode ? 'TRN continuation' : 'Fresh registration';
+    currentStep = 0; updateProgress();
+    await botSay(isTRNMode ? 'Got it! You have a TRN — we\'ll go straight to Part B.' : 'No problem! We\'ll collect everything for a fresh registration.', [], null, 500);
+    await showNextStep(); return;
+  }
+  const step = flow[currentStep];
+  if (step.validate) {
+    const err = step.validate(val.trim());
+    if (err) { addMsg(val, 'user'); await botSay('⚠ ' + err, [], null, 400); awaitingInput = true; return; }
+  }
+  collected[step.key] = val.trim();
+  addMsg(val, 'user');
+  currentStep++; updateProgress();
+  await showNextStep();
+}
+
+async function showNextStep() {
+  if (currentStep >= flow.length) return;
+  const step = flow[currentStep];
+  if (step.ask === 'upload_docs') {
+    awaitingInput = false; inputEl.disabled = true; sendBtn.disabled = true;
+    await botSay('Please upload your documents below. Files are held securely in memory and deleted after submission.', [], buildUploadUI(), 600);
+    return;
+  }
+  await botSay(step.ask, step.quickReplies || [], null, 600);
+  awaitingInput = true;
+}
+
+async function init() {
+  try {
+    const res = await fetch(`${BACKEND}/api/session/start`, { method: 'POST' });
+    const data = await res.json();
+    sessionId = data.sessionId;
+  } catch {
+    addMsg('Could not connect to the server. Please refresh and try again.', 'error_'); return;
+  }
+  await botSay('Hi! I\'m your GST Registration Agent.\n\nI\'ll collect your details, fill the GST portal, and guide you through OTP verification — all from this chat.\n\nDo you already have a Temporary Reference Number (TRN)?', ['Yes, I have a TRN', 'No, start fresh'], null, 600);
+  awaitingInput = true;
+}
+
+sendBtn.onclick = () => { if (awaitingInput) handleInput(inputEl.value); };
+inputEl.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (awaitingInput) handleInput(inputEl.value); } });
+inputEl.addEventListener('input', () => { inputEl.style.height = 'auto'; inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px'; });
+
+init();
+</script>
+</body>
+</html>
