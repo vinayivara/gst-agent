@@ -50,79 +50,145 @@ async function run(sessionId, session) {
   }
 }
 
+// ── TRN Flow ──────────────────────────────────────────────────────────────────
 async function handleTRNFlow(page, formData, files, sessionId, send, tempFiles) {
   send('status', 'Selecting TRN option on GST portal...');
 
-  // Click TRN radio button — try multiple selectors
+  // Click the TRN radio button specifically
   await page.evaluate(() => {
-    const labels = document.querySelectorAll('label, span, div');
-    for (const el of labels) {
-      if (el.innerText && el.innerText.includes('TRN')) {
-        el.click(); return;
+    const inputs = document.querySelectorAll('input[type="radio"]');
+    for (const input of inputs) {
+      const label = document.querySelector(`label[for="${input.id}"]`);
+      const labelText = label ? label.innerText : '';
+      const parentText = input.parentElement ? input.parentElement.innerText : '';
+      if (labelText.includes('TRN') || parentText.includes('TRN')) {
+        input.click();
+        return;
+      }
+    }
+    // Fallback — click any element containing TRN text
+    const allEls = document.querySelectorAll('label, span, a, button');
+    for (const el of allEls) {
+      if (el.innerText && el.innerText.trim() === 'TRN') {
+        el.click();
+        return;
       }
     }
   });
   await page.waitForTimeout(2000);
 
-  // Fill TRN field
+  // Fill TRN number — explicitly skip radio/checkbox inputs
   send('status', 'Entering TRN number...');
-  const trnInput = await page.$('input[id*="trn" i], input[name*="trn" i], input[placeholder*="trn" i], input[type="text"]');
-  if (trnInput) {
-    await trnInput.click();
-    await trnInput.fill(formData.trn);
+  const trnInput = await page.evaluateHandle(() => {
+    const inputs = document.querySelectorAll('input');
+    for (const input of inputs) {
+      const type = input.type.toLowerCase();
+      if (type === 'radio' || type === 'checkbox' || type === 'submit' || type === 'button' || type === 'hidden') continue;
+      const id = (input.id || '').toLowerCase();
+      const name = (input.name || '').toLowerCase();
+      const placeholder = (input.placeholder || '').toLowerCase();
+      if (id.includes('trn') || name.includes('trn') || placeholder.includes('trn')) return input;
+    }
+    // Fallback — first visible non-radio input
+    for (const input of inputs) {
+      const type = input.type.toLowerCase();
+      if (type === 'radio' || type === 'checkbox' || type === 'submit' || type === 'button' || type === 'hidden') continue;
+      const rect = input.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) return input;
+    }
+    return null;
+  });
+
+  const trnEl = trnInput.asElement();
+  if (trnEl) {
+    await trnEl.click();
+    await trnEl.fill(formData.trn);
   }
 
-  // Click proceed/submit button
+  // Click proceed button
   await clickButton(page, ['Proceed', 'Submit', 'Continue', 'Next']);
   await page.waitForTimeout(3000);
 
-  // Wait for OTP input — broad selector
-  send('status', 'Waiting for OTP screen...');
-  await page.waitForSelector('input', { timeout: TIMEOUT });
-
   // Ask user for OTP
+  send('status', 'Waiting for OTP screen...');
+  await page.waitForTimeout(2000);
   send('otp_required', 'Please enter the OTP sent to your registered mobile/email to log in with your TRN.');
   const loginOtp = await sessionStore.waitForOTP(sessionId);
-  if (!loginOtp) throw new Error('OTP not received');
+  if (!loginOtp) throw new Error('OTP not received from user');
 
-  // Fill OTP — find the visible input
+  // Fill OTP
   const otpInput = await findVisibleInput(page);
-  if (otpInput) {
-    await otpInput.fill(loginOtp);
-  }
+  const otpEl = otpInput.asElement();
+  if (otpEl) await otpEl.fill(loginOtp);
 
   await clickButton(page, ['Proceed', 'Verify', 'Submit', 'Validate']);
   await page.waitForTimeout(3000);
 
-  send('status', 'Logged in successfully. Loading Part B form...');
+  send('status', 'Logged in. Loading Part B form...');
   await page.waitForLoadState('domcontentloaded');
-
   await fillPartB(page, formData, files, sessionId, send, tempFiles);
 }
 
+// ── Fresh Registration Flow ───────────────────────────────────────────────────
 async function handleFreshFlow(page, formData, files, sessionId, send, tempFiles) {
   send('status', 'Starting fresh registration — filling Part A...');
-  await page.waitForSelector('input', { timeout: TIMEOUT });
   await page.waitForTimeout(2000);
 
   // Fill PAN
-  const panInput = await page.$('input[id*="pan" i], input[name*="pan" i], input[placeholder*="pan" i]');
-  if (panInput) await panInput.fill(formData.pan.toUpperCase());
+  const panInput = await page.evaluateHandle(() => {
+    const inputs = document.querySelectorAll('input');
+    for (const input of inputs) {
+      const type = input.type.toLowerCase();
+      if (type === 'radio' || type === 'checkbox' || type === 'submit' || type === 'button' || type === 'hidden') continue;
+      const id = (input.id || '').toLowerCase();
+      const name = (input.name || '').toLowerCase();
+      const placeholder = (input.placeholder || '').toLowerCase();
+      if (id.includes('pan') || name.includes('pan') || placeholder.includes('pan')) return input;
+    }
+    return null;
+  });
+  const panEl = panInput.asElement();
+  if (panEl) await panEl.fill(formData.pan.toUpperCase());
 
-  // Fill email and mobile
-  const emailInput = await page.$('input[type="email"], input[id*="email" i], input[name*="email" i]');
-  if (emailInput) await emailInput.fill(formData.mobileEmail.split('|')[1].trim());
+  // Fill email
+  const emailInput = await page.evaluateHandle(() => {
+    const inputs = document.querySelectorAll('input');
+    for (const input of inputs) {
+      const type = input.type.toLowerCase();
+      if (type === 'email') return input;
+      const id = (input.id || '').toLowerCase();
+      const name = (input.name || '').toLowerCase();
+      if (id.includes('email') || name.includes('email')) return input;
+    }
+    return null;
+  });
+  const emailEl = emailInput.asElement();
+  if (emailEl) await emailEl.fill(formData.mobileEmail.split('|')[1].trim());
 
-  const mobileInput = await page.$('input[type="tel"], input[id*="mobile" i], input[name*="mobile" i]');
-  if (mobileInput) await mobileInput.fill(formData.mobileEmail.split('|')[0].trim());
+  // Fill mobile
+  const mobileInput = await page.evaluateHandle(() => {
+    const inputs = document.querySelectorAll('input');
+    for (const input of inputs) {
+      const type = input.type.toLowerCase();
+      if (type === 'tel') return input;
+      const id = (input.id || '').toLowerCase();
+      const name = (input.name || '').toLowerCase();
+      if (id.includes('mobile') || name.includes('mobile') || id.includes('phone') || name.includes('phone')) return input;
+    }
+    return null;
+  });
+  const mobileEl = mobileInput.asElement();
+  if (mobileEl) await mobileEl.fill(formData.mobileEmail.split('|')[0].trim());
 
   await clickButton(page, ['Proceed', 'Submit', 'Continue']);
   await page.waitForTimeout(3000);
 
+  // OTP for Part A
   send('otp_required', 'Please enter the OTP sent to your mobile to verify Part A.');
   const partAOtp = await sessionStore.waitForOTP(sessionId);
   const otpInput = await findVisibleInput(page);
-  if (otpInput) await otpInput.fill(partAOtp);
+  const otpEl = otpInput.asElement();
+  if (otpEl) await otpEl.fill(partAOtp);
 
   await clickButton(page, ['Proceed', 'Verify', 'Submit']);
   await page.waitForTimeout(3000);
@@ -131,33 +197,97 @@ async function handleFreshFlow(page, formData, files, sessionId, send, tempFiles
   await fillPartB(page, formData, files, sessionId, send, tempFiles);
 }
 
+// ── Fill Part B ───────────────────────────────────────────────────────────────
 async function fillPartB(page, formData, files, sessionId, send, tempFiles) {
   send('status', 'Filling business details...');
   await page.waitForTimeout(2000);
 
-  // Trade name
-  const nameInput = await page.$('input[id*="trade" i], input[name*="trade" i], input[placeholder*="trade" i], input[id*="business" i]');
-  if (nameInput) await nameInput.fill(formData.businessName);
+  // Business / trade name
+  const nameInput = await page.evaluateHandle(() => {
+    const inputs = document.querySelectorAll('input');
+    for (const input of inputs) {
+      const type = input.type.toLowerCase();
+      if (type === 'radio' || type === 'checkbox' || type === 'submit' || type === 'button' || type === 'hidden') continue;
+      const id = (input.id || '').toLowerCase();
+      const name = (input.name || '').toLowerCase();
+      const placeholder = (input.placeholder || '').toLowerCase();
+      if (id.includes('trade') || name.includes('trade') || placeholder.includes('trade') ||
+          id.includes('business') || name.includes('business')) return input;
+    }
+    return null;
+  });
+  const nameEl = nameInput.asElement();
+  if (nameEl) await nameEl.fill(formData.businessName);
 
   // Address
   send('status', 'Filling address details...');
   const addressParts = formData.businessAddress.split(',');
-  const addr1 = await page.$('input[id*="addr1" i], input[id*="address1" i], input[name*="addr" i]');
-  if (addr1) await addr1.fill(addressParts[0] || '');
 
+  const addr1Input = await page.evaluateHandle(() => {
+    const inputs = document.querySelectorAll('input');
+    for (const input of inputs) {
+      const type = input.type.toLowerCase();
+      if (type === 'radio' || type === 'checkbox' || type === 'submit' || type === 'button' || type === 'hidden') continue;
+      const id = (input.id || '').toLowerCase();
+      const name = (input.name || '').toLowerCase();
+      if (id.includes('addr') || name.includes('addr') || id.includes('building') || name.includes('building')) return input;
+    }
+    return null;
+  });
+  const addr1El = addr1Input.asElement();
+  if (addr1El) await addr1El.fill(addressParts[0] ? addressParts[0].trim() : '');
+
+  // PIN code
   const pinMatch = formData.businessAddress.match(/\b\d{6}\b/);
   if (pinMatch) {
-    const pinInput = await page.$('input[id*="pin" i], input[name*="pin" i], input[placeholder*="pin" i]');
-    if (pinInput) await pinInput.fill(pinMatch[0]);
+    const pinInput = await page.evaluateHandle(() => {
+      const inputs = document.querySelectorAll('input');
+      for (const input of inputs) {
+        const type = input.type.toLowerCase();
+        if (type === 'radio' || type === 'checkbox' || type === 'submit' || type === 'button' || type === 'hidden') continue;
+        const id = (input.id || '').toLowerCase();
+        const name = (input.name || '').toLowerCase();
+        const placeholder = (input.placeholder || '').toLowerCase();
+        if (id.includes('pin') || name.includes('pin') || placeholder.includes('pin') ||
+            id.includes('zip') || name.includes('zip')) return input;
+      }
+      return null;
+    });
+    const pinEl = pinInput.asElement();
+    if (pinEl) await pinEl.fill(pinMatch[0]);
   }
 
   // Bank details
   send('status', 'Filling bank account details...');
   const [accountNo, ifsc] = (formData.bankAccount || '').split('|').map(s => s.trim());
-  const accInput = await page.$('input[id*="account" i], input[name*="account" i]');
-  if (accInput) await accInput.fill(accountNo || '');
-  const ifscInput = await page.$('input[id*="ifsc" i], input[name*="ifsc" i]');
-  if (ifscInput) await ifscInput.fill(ifsc || '');
+
+  const accInput = await page.evaluateHandle(() => {
+    const inputs = document.querySelectorAll('input');
+    for (const input of inputs) {
+      const type = input.type.toLowerCase();
+      if (type === 'radio' || type === 'checkbox' || type === 'submit' || type === 'button' || type === 'hidden') continue;
+      const id = (input.id || '').toLowerCase();
+      const name = (input.name || '').toLowerCase();
+      if (id.includes('account') || name.includes('account') || id.includes('accno') || name.includes('accno')) return input;
+    }
+    return null;
+  });
+  const accEl = accInput.asElement();
+  if (accEl) await accEl.fill(accountNo || '');
+
+  const ifscInput = await page.evaluateHandle(() => {
+    const inputs = document.querySelectorAll('input');
+    for (const input of inputs) {
+      const type = input.type.toLowerCase();
+      if (type === 'radio' || type === 'checkbox' || type === 'submit' || type === 'button' || type === 'hidden') continue;
+      const id = (input.id || '').toLowerCase();
+      const name = (input.name || '').toLowerCase();
+      if (id.includes('ifsc') || name.includes('ifsc')) return input;
+    }
+    return null;
+  });
+  const ifscEl = ifscInput.asElement();
+  if (ifscEl) await ifscEl.fill(ifsc || '');
 
   // Upload documents
   send('status', 'Uploading documents...');
@@ -168,19 +298,61 @@ async function fillPartB(page, formData, files, sessionId, send, tempFiles) {
   await page.waitForTimeout(2000);
 
   if (formData.verificationMode && formData.verificationMode.includes('EVC')) {
-    const evcRadio = await page.$('input[value*="EVC" i], input[id*="evc" i]');
-    if (evcRadio) await evcRadio.click();
+    await page.evaluate(() => {
+      const inputs = document.querySelectorAll('input[type="radio"]');
+      for (const input of inputs) {
+        const label = document.querySelector(`label[for="${input.id}"]`);
+        const labelText = label ? label.innerText : '';
+        const parentText = input.parentElement ? input.parentElement.innerText : '';
+        if (labelText.includes('EVC') || parentText.includes('EVC') ||
+            (input.value && input.value.toUpperCase().includes('EVC'))) {
+          input.click();
+          return;
+        }
+      }
+    });
+    await page.waitForTimeout(1000);
     await clickButton(page, ['Send OTP', 'Generate OTP', 'Get OTP']);
     await page.waitForTimeout(3000);
 
     send('otp_required', 'Please enter the EVC OTP sent to your registered mobile to submit the application.');
     const evcOtp = await sessionStore.waitForOTP(sessionId);
-    const otpInput = await findVisibleInput(page);
-    if (otpInput) await otpInput.fill(evcOtp);
+    const evcInput = await findVisibleInput(page);
+    const evcEl = evcInput.asElement();
+    if (evcEl) await evcEl.fill(evcOtp);
+
     await clickButton(page, ['Validate', 'Verify', 'Submit']);
+    await page.waitForTimeout(3000);
+
+  } else if (formData.verificationMode && formData.verificationMode.includes('e-Sign')) {
+    await page.evaluate(() => {
+      const inputs = document.querySelectorAll('input[type="radio"]');
+      for (const input of inputs) {
+        const label = document.querySelector(`label[for="${input.id}"]`);
+        const labelText = label ? label.innerText : '';
+        if (labelText.includes('e-Sign') || labelText.includes('eSign') ||
+            (input.value && input.value.toLowerCase().includes('esign'))) {
+          input.click();
+          return;
+        }
+      }
+    });
+    await page.waitForTimeout(1000);
+    await clickButton(page, ['Proceed', 'Submit']);
+    await page.waitForTimeout(3000);
+
+    send('otp_required', 'Please enter the Aadhaar OTP sent to your Aadhaar-linked mobile for e-Sign verification.');
+    const esignOtp = await sessionStore.waitForOTP(sessionId);
+    const esignInput = await findVisibleInput(page);
+    const esignEl = esignInput.asElement();
+    if (esignEl) await esignEl.fill(esignOtp);
+
+    await clickButton(page, ['Submit', 'Verify', 'Validate']);
+    await page.waitForTimeout(3000);
   }
 
-  await clickButton(page, ['Submit', 'Final Submit']);
+  // Final submit
+  await clickButton(page, ['Submit', 'Final Submit', 'Proceed']);
   send('status', 'Application submitted! Waiting for ARN...');
   await page.waitForTimeout(5000);
 
@@ -188,35 +360,55 @@ async function fillPartB(page, formData, files, sessionId, send, tempFiles) {
   const arn = await page.evaluate(() => {
     const all = document.querySelectorAll('*');
     for (const el of all) {
-      if (el.children.length === 0 && el.innerText && el.innerText.match(/ARN\d+|[A-Z]{2}\d{2}[A-Z0-9]{10}/)) {
-        return el.innerText.trim();
+      if (el.children.length === 0 && el.innerText) {
+        const text = el.innerText.trim();
+        if (text.match(/ARN\s*[-:]?\s*[A-Z0-9]{15,}/i) || text.match(/^[A-Z]{2}\d{2}[A-Z0-9]{10,}$/)) {
+          return text;
+        }
       }
     }
-    return null;
+    const body = document.body.innerText;
+    const match = body.match(/ARN[\s:-]*([A-Z0-9]{15,})/i);
+    return match ? match[0] : 'ARN generated — check your registered email/mobile for confirmation.';
   });
 
-  sessionStore.sendToClient(sessionId, { type: 'complete', message: 'Done!', arn });
+  sessionStore.sendToClient(sessionId, { type: 'complete', message: 'Registration submitted successfully!', arn });
 }
 
+// ── Upload documents ──────────────────────────────────────────────────────────
 async function uploadDocuments(page, files, send, tempFiles) {
-  const docMap = { pan: 'PAN', aadhaar: 'Aadhaar', addressProof: 'Address Proof', bankStatement: 'Bank Statement', photo: 'Photo' };
+  const docMap = {
+    pan: 'PAN',
+    aadhaar: 'Aadhaar',
+    addressProof: 'Address Proof',
+    bankStatement: 'Bank Statement',
+    photo: 'Photo',
+  };
   for (const [key, label] of Object.entries(docMap)) {
     if (!files[key]) continue;
     try {
-      const { writeFileTemp } = require('../utils/fileHelper');
       const tmpPath = await writeFileTemp(files[key].buffer, files[key].originalname);
       tempFiles.push(tmpPath);
-      const input = await page.$(`input[type="file"][name*="${key}" i], input[type="file"][id*="${key}" i], input[type="file"]`);
-      if (input) { await input.setInputFiles(tmpPath); send('status', `Uploaded ${label}`); }
-    } catch (err) { console.warn(`Could not upload ${label}:`, err.message); }
+      const input = await page.$(`input[type="file"][name*="${key}" i], input[type="file"][id*="${key}" i]`);
+      if (input) {
+        await input.setInputFiles(tmpPath);
+        send('status', `Uploaded ${label}`);
+        await page.waitForTimeout(1000);
+      }
+    } catch (err) {
+      console.warn(`Could not upload ${label}:`, err.message);
+    }
   }
 }
 
-// Find the most visible text input on the page
+// ── Find first visible non-radio input on page ────────────────────────────────
 async function findVisibleInput(page) {
   return page.evaluateHandle(() => {
-    const inputs = document.querySelectorAll('input[type="text"], input[type="number"], input[type="tel"], input:not([type])');
+    const inputs = document.querySelectorAll('input');
     for (const input of inputs) {
+      const type = input.type.toLowerCase();
+      if (type === 'radio' || type === 'checkbox' || type === 'submit' ||
+          type === 'button' || type === 'hidden' || type === 'file') continue;
       const rect = input.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) return input;
     }
@@ -224,7 +416,7 @@ async function findVisibleInput(page) {
   });
 }
 
-// Click a button by trying multiple label texts
+// ── Click button by label text ────────────────────────────────────────────────
 async function clickButton(page, labels) {
   for (const label of labels) {
     try {
@@ -232,6 +424,19 @@ async function clickButton(page, labels) {
       if (btn) { await btn.click(); return; }
     } catch (_) {}
   }
+  // Fallback — evaluate in page context
+  await page.evaluate((labels) => {
+    const buttons = document.querySelectorAll('button, input[type="submit"], a');
+    for (const btn of buttons) {
+      const text = btn.innerText || btn.value || '';
+      for (const label of labels) {
+        if (text.trim().toLowerCase().includes(label.toLowerCase())) {
+          btn.click();
+          return;
+        }
+      }
+    }
+  }, labels);
 }
 
 module.exports = { run };
