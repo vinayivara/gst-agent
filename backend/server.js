@@ -134,6 +134,11 @@ app.delete('/api/session/:sessionId', (req, res) => {
   res.json({ ok: true });
 });
 
+// 7. Root route — confirms backend is running
+app.get('/', (req, res) => {
+  res.json({ status: 'GST Agent backend is running' });
+});
+
 // ─── Start server ─────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
