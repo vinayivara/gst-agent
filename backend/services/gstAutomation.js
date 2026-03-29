@@ -31,6 +31,9 @@ async function run(sessionId, session) {
     await page.goto(GST_PORTAL, { waitUntil: 'domcontentloaded', timeout: TIMEOUT });
     await page.waitForTimeout(3000);
 
+    // ── Handle CAPTCHA on landing page if present ──────────────────────────
+    await handleCaptchaIfPresent(page, sessionId, send);
+
     if (formData.mode === 'TRN continuation') {
       await handleTRNFlow(page, formData, files, sessionId, send, tempFiles);
     } else {
@@ -50,11 +53,79 @@ async function run(sessionId, session) {
   }
 }
 
+// ── Detect and handle CAPTCHA anywhere in the flow ───────────────────────────
+async function handleCaptchaIfPresent(page, sessionId, send) {
+  try {
+    // Check if a CAPTCHA image exists on the page
+    const captchaImg = await page.$('img[src*="captcha" i], img[id*="captcha" i], img[class*="captcha" i], #captchaImage, .captcha img');
+    if (!captchaImg) return; // No CAPTCHA found
+
+    send('status', 'CAPTCHA detected — sending to chat...');
+
+    // Screenshot just the CAPTCHA image
+    const captchaBox = await captchaImg.boundingBox();
+    let captchaBase64;
+
+    if (captchaBox) {
+      const captchaScreenshot = await page.screenshot({
+        type: 'png',
+        clip: {
+          x: Math.max(0, captchaBox.x - 10),
+          y: Math.max(0, captchaBox.y - 10),
+          width: captchaBox.width + 20,
+          height: captchaBox.height + 20,
+        },
+      });
+      captchaBase64 = captchaScreenshot.toString('base64');
+    } else {
+      // Fallback — full page screenshot
+      const fullScreenshot = await page.screenshot({ type: 'png' });
+      captchaBase64 = fullScreenshot.toString('base64');
+    }
+
+    // Send CAPTCHA image to chat and wait for user input
+    send('captcha_required', 'Please enter the CAPTCHA shown in the image below.', {
+      screenshot: captchaBase64,
+    });
+
+    const captchaValue = await sessionStore.waitForOTP(sessionId); // reuse OTP wait mechanism
+    if (!captchaValue) throw new Error('CAPTCHA not received from user');
+
+    // Fill CAPTCHA input field
+    const captchaInput = await page.$(
+      'input[id*="captcha" i], input[name*="captcha" i], input[placeholder*="captcha" i], input[class*="captcha" i]'
+    );
+    if (captchaInput) {
+      await captchaInput.fill(captchaValue);
+      send('status', 'CAPTCHA entered. Proceeding...');
+    } else {
+      // Fallback — find first visible text input
+      const visibleInput = await findVisibleInput(page);
+      const visibleEl = visibleInput.asElement();
+      if (visibleEl) await visibleEl.fill(captchaValue);
+    }
+
+    // Submit CAPTCHA
+    await clickButton(page, ['Submit', 'Proceed', 'Continue', 'Login', 'Go']);
+    await page.waitForTimeout(2000);
+
+    // Check if CAPTCHA is still present (wrong entry)
+    const stillPresent = await page.$('img[src*="captcha" i], img[id*="captcha" i]');
+    if (stillPresent) {
+      send('status', 'CAPTCHA was incorrect — trying again...');
+      await handleCaptchaIfPresent(page, sessionId, send); // Retry recursively
+    }
+
+  } catch (err) {
+    // No CAPTCHA or error handling — continue
+    console.log('CAPTCHA check:', err.message);
+  }
+}
+
 // ── TRN Flow ──────────────────────────────────────────────────────────────────
 async function handleTRNFlow(page, formData, files, sessionId, send, tempFiles) {
   send('status', 'Selecting TRN option on GST portal...');
 
-  // Click the TRN radio button specifically
   await page.evaluate(() => {
     const inputs = document.querySelectorAll('input[type="radio"]');
     for (const input of inputs) {
@@ -62,22 +133,22 @@ async function handleTRNFlow(page, formData, files, sessionId, send, tempFiles) 
       const labelText = label ? label.innerText : '';
       const parentText = input.parentElement ? input.parentElement.innerText : '';
       if (labelText.includes('TRN') || parentText.includes('TRN')) {
-        input.click();
-        return;
+        input.click(); return;
       }
     }
-    // Fallback — click any element containing TRN text
     const allEls = document.querySelectorAll('label, span, a, button');
     for (const el of allEls) {
       if (el.innerText && el.innerText.trim() === 'TRN') {
-        el.click();
-        return;
+        el.click(); return;
       }
     }
   });
   await page.waitForTimeout(2000);
 
-  // Fill TRN number — explicitly skip radio/checkbox inputs
+  // Handle CAPTCHA after selecting TRN if it appears
+  await handleCaptchaIfPresent(page, sessionId, send);
+
+  // Fill TRN number
   send('status', 'Entering TRN number...');
   const trnInput = await page.evaluateHandle(() => {
     const inputs = document.querySelectorAll('input');
@@ -89,7 +160,6 @@ async function handleTRNFlow(page, formData, files, sessionId, send, tempFiles) 
       const placeholder = (input.placeholder || '').toLowerCase();
       if (id.includes('trn') || name.includes('trn') || placeholder.includes('trn')) return input;
     }
-    // Fallback — first visible non-radio input
     for (const input of inputs) {
       const type = input.type.toLowerCase();
       if (type === 'radio' || type === 'checkbox' || type === 'submit' || type === 'button' || type === 'hidden') continue;
@@ -105,24 +175,28 @@ async function handleTRNFlow(page, formData, files, sessionId, send, tempFiles) 
     await trnEl.fill(formData.trn);
   }
 
-  // Click proceed button
   await clickButton(page, ['Proceed', 'Submit', 'Continue', 'Next']);
   await page.waitForTimeout(3000);
 
-  // Ask user for OTP
+  // Handle CAPTCHA after submitting TRN
+  await handleCaptchaIfPresent(page, sessionId, send);
+
   send('status', 'Waiting for OTP screen...');
   await page.waitForTimeout(2000);
+
   send('otp_required', 'Please enter the OTP sent to your registered mobile/email to log in with your TRN.');
   const loginOtp = await sessionStore.waitForOTP(sessionId);
   if (!loginOtp) throw new Error('OTP not received from user');
 
-  // Fill OTP
   const otpInput = await findVisibleInput(page);
   const otpEl = otpInput.asElement();
   if (otpEl) await otpEl.fill(loginOtp);
 
   await clickButton(page, ['Proceed', 'Verify', 'Submit', 'Validate']);
   await page.waitForTimeout(3000);
+
+  // Handle CAPTCHA after OTP if present
+  await handleCaptchaIfPresent(page, sessionId, send);
 
   send('status', 'Logged in. Loading Part B form...');
   await page.waitForLoadState('domcontentloaded');
@@ -134,7 +208,8 @@ async function handleFreshFlow(page, formData, files, sessionId, send, tempFiles
   send('status', 'Starting fresh registration — filling Part A...');
   await page.waitForTimeout(2000);
 
-  // Fill PAN
+  await handleCaptchaIfPresent(page, sessionId, send);
+
   const panInput = await page.evaluateHandle(() => {
     const inputs = document.querySelectorAll('input');
     for (const input of inputs) {
@@ -150,7 +225,6 @@ async function handleFreshFlow(page, formData, files, sessionId, send, tempFiles
   const panEl = panInput.asElement();
   if (panEl) await panEl.fill(formData.pan.toUpperCase());
 
-  // Fill email
   const emailInput = await page.evaluateHandle(() => {
     const inputs = document.querySelectorAll('input');
     for (const input of inputs) {
@@ -165,7 +239,6 @@ async function handleFreshFlow(page, formData, files, sessionId, send, tempFiles
   const emailEl = emailInput.asElement();
   if (emailEl) await emailEl.fill(formData.mobileEmail.split('|')[1].trim());
 
-  // Fill mobile
   const mobileInput = await page.evaluateHandle(() => {
     const inputs = document.querySelectorAll('input');
     for (const input of inputs) {
@@ -183,7 +256,8 @@ async function handleFreshFlow(page, formData, files, sessionId, send, tempFiles
   await clickButton(page, ['Proceed', 'Submit', 'Continue']);
   await page.waitForTimeout(3000);
 
-  // OTP for Part A
+  await handleCaptchaIfPresent(page, sessionId, send);
+
   send('otp_required', 'Please enter the OTP sent to your mobile to verify Part A.');
   const partAOtp = await sessionStore.waitForOTP(sessionId);
   const otpInput = await findVisibleInput(page);
@@ -202,7 +276,8 @@ async function fillPartB(page, formData, files, sessionId, send, tempFiles) {
   send('status', 'Filling business details...');
   await page.waitForTimeout(2000);
 
-  // Business / trade name
+  await handleCaptchaIfPresent(page, sessionId, send);
+
   const nameInput = await page.evaluateHandle(() => {
     const inputs = document.querySelectorAll('input');
     for (const input of inputs) {
@@ -219,7 +294,6 @@ async function fillPartB(page, formData, files, sessionId, send, tempFiles) {
   const nameEl = nameInput.asElement();
   if (nameEl) await nameEl.fill(formData.businessName);
 
-  // Address
   send('status', 'Filling address details...');
   const addressParts = formData.businessAddress.split(',');
 
@@ -237,7 +311,6 @@ async function fillPartB(page, formData, files, sessionId, send, tempFiles) {
   const addr1El = addr1Input.asElement();
   if (addr1El) await addr1El.fill(addressParts[0] ? addressParts[0].trim() : '');
 
-  // PIN code
   const pinMatch = formData.businessAddress.match(/\b\d{6}\b/);
   if (pinMatch) {
     const pinInput = await page.evaluateHandle(() => {
@@ -257,7 +330,6 @@ async function fillPartB(page, formData, files, sessionId, send, tempFiles) {
     if (pinEl) await pinEl.fill(pinMatch[0]);
   }
 
-  // Bank details
   send('status', 'Filling bank account details...');
   const [accountNo, ifsc] = (formData.bankAccount || '').split('|').map(s => s.trim());
 
@@ -289,13 +361,13 @@ async function fillPartB(page, formData, files, sessionId, send, tempFiles) {
   const ifscEl = ifscInput.asElement();
   if (ifscEl) await ifscEl.fill(ifsc || '');
 
-  // Upload documents
   send('status', 'Uploading documents...');
   await uploadDocuments(page, files, send, tempFiles);
 
-  // Verification
   send('status', 'Proceeding to verification...');
   await page.waitForTimeout(2000);
+
+  await handleCaptchaIfPresent(page, sessionId, send);
 
   if (formData.verificationMode && formData.verificationMode.includes('EVC')) {
     await page.evaluate(() => {
@@ -306,14 +378,15 @@ async function fillPartB(page, formData, files, sessionId, send, tempFiles) {
         const parentText = input.parentElement ? input.parentElement.innerText : '';
         if (labelText.includes('EVC') || parentText.includes('EVC') ||
             (input.value && input.value.toUpperCase().includes('EVC'))) {
-          input.click();
-          return;
+          input.click(); return;
         }
       }
     });
     await page.waitForTimeout(1000);
     await clickButton(page, ['Send OTP', 'Generate OTP', 'Get OTP']);
     await page.waitForTimeout(3000);
+
+    await handleCaptchaIfPresent(page, sessionId, send);
 
     send('otp_required', 'Please enter the EVC OTP sent to your registered mobile to submit the application.');
     const evcOtp = await sessionStore.waitForOTP(sessionId);
@@ -332,8 +405,7 @@ async function fillPartB(page, formData, files, sessionId, send, tempFiles) {
         const labelText = label ? label.innerText : '';
         if (labelText.includes('e-Sign') || labelText.includes('eSign') ||
             (input.value && input.value.toLowerCase().includes('esign'))) {
-          input.click();
-          return;
+          input.click(); return;
         }
       }
     });
@@ -351,12 +423,10 @@ async function fillPartB(page, formData, files, sessionId, send, tempFiles) {
     await page.waitForTimeout(3000);
   }
 
-  // Final submit
   await clickButton(page, ['Submit', 'Final Submit', 'Proceed']);
   send('status', 'Application submitted! Waiting for ARN...');
   await page.waitForTimeout(5000);
 
-  // Grab ARN from page
   const arn = await page.evaluate(() => {
     const all = document.querySelectorAll('*');
     for (const el of all) {
@@ -401,7 +471,7 @@ async function uploadDocuments(page, files, send, tempFiles) {
   }
 }
 
-// ── Find first visible non-radio input on page ────────────────────────────────
+// ── Find first visible non-radio input ───────────────────────────────────────
 async function findVisibleInput(page) {
   return page.evaluateHandle(() => {
     const inputs = document.querySelectorAll('input');
@@ -416,7 +486,7 @@ async function findVisibleInput(page) {
   });
 }
 
-// ── Click button by label text ────────────────────────────────────────────────
+// ── Click button by label ─────────────────────────────────────────────────────
 async function clickButton(page, labels) {
   for (const label of labels) {
     try {
@@ -424,15 +494,13 @@ async function clickButton(page, labels) {
       if (btn) { await btn.click(); return; }
     } catch (_) {}
   }
-  // Fallback — evaluate in page context
   await page.evaluate((labels) => {
     const buttons = document.querySelectorAll('button, input[type="submit"], a');
     for (const btn of buttons) {
       const text = btn.innerText || btn.value || '';
       for (const label of labels) {
         if (text.trim().toLowerCase().includes(label.toLowerCase())) {
-          btn.click();
-          return;
+          btn.click(); return;
         }
       }
     }
