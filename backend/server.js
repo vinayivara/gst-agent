@@ -25,10 +25,11 @@ const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
-  methods: ['GET', 'POST'],
+  origin: '*',
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-app.use(express.json());
+app.options('*', cors());
 
 // File upload config — files stored in memory, never on disk
 const storage = multer.memoryStorage();
